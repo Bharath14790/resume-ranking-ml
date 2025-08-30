@@ -1,16 +1,14 @@
-# streamlit_app.py
+
 import pickle
 import re
 
 
-# Cleaning function
 def clean_text(text):
     text = text.lower()
     text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
     return text
 
-# Load Pickle model
-@st.cache_resource
+
 def load_model():
     with open("resume_model.pkl", "rb") as f:
         df, vectorizer, tfidf_matrix = pickle.load(f)
@@ -29,15 +27,15 @@ if st.button("Find Top Candidates"):
     else:
         job_description = clean_text(job_description)
 
-        # Transform job description
+        
         job_vec = vectorizer.transform([job_description])
 
-        # Similarity
+      
         similarity_scores = cosine_similarity(tfidf_matrix, job_vec).flatten()
 
         df['match_score'] = similarity_scores
 
-        # Top 10 candidates
+      
         top_candidates = df[['Category', 'Resume', 'match_score']].sort_values(
             by="match_score", ascending=False
         ).head(10)
@@ -47,5 +45,6 @@ if st.button("Find Top Candidates"):
             st.markdown(f"**{row['Category']}** (Score: {row['match_score']:.2f})")
             st.write(row['Resume'][:400] + "...")
             st.write("---")
+
 
 
