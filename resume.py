@@ -1,5 +1,4 @@
 # streamlit_app.py
-import streamlit as st
 import pickle
 import re
 from sklearn.metrics.pairwise import cosine_similarity
@@ -48,3 +47,4 @@ if st.button("Find Top Candidates"):
             st.markdown(f"**{row['Category']}** (Score: {row['match_score']:.2f})")
             st.write(row['Resume'][:400] + "...")
             st.write("---")
+
