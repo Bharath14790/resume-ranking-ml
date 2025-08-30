@@ -1,7 +1,7 @@
 # streamlit_app.py
 import pickle
 import re
-from sklearn.metrics.pairwise import cosine_similarity
+
 
 # Cleaning function
 def clean_text(text):
@@ -47,4 +47,5 @@ if st.button("Find Top Candidates"):
             st.markdown(f"**{row['Category']}** (Score: {row['match_score']:.2f})")
             st.write(row['Resume'][:400] + "...")
             st.write("---")
+
 
