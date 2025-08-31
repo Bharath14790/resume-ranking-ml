@@ -1,17 +1,38 @@
-
+import streamlit as st
 import pickle
 import re
+from sklearn.metrics.pairwise import cosine_similarity
 
-
+# Cleaning function for job description (used for matching)
 def clean_text(text):
     text = text.lower()
-    text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
+    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)   # remove special chars
+    return text.strip()
+
+# Cleaning function for resumes (to fix weird symbols)
+def clean_resume(text):
+    if isinstance(text, str):
+        replacements = {
+            "â¢": "•",   # bullet point
+            "â€™": "'",  # apostrophe
+            "â€“": "-",  # dash
+            "â€œ": '"',  # opening quote
+            "â€�": '"',  # closing quote
+        }
+        for wrong, correct in replacements.items():
+            text = text.replace(wrong, correct)
+        return text.strip()
     return text
 
-
+# Load Pickle model
+@st.cache_resource
 def load_model():
     with open("resume_model.pkl", "rb") as f:
         df, vectorizer, tfidf_matrix = pickle.load(f)
+
+    # Clean resumes right after loading
+    df['Resume'] = df['Resume'].apply(clean_resume)
+
     return df, vectorizer, tfidf_matrix
 
 df, vectorizer, tfidf_matrix = load_model()
@@ -27,15 +48,15 @@ if st.button("Find Top Candidates"):
     else:
         job_description = clean_text(job_description)
 
-        
+        # Transform job description
         job_vec = vectorizer.transform([job_description])
 
-      
+        # Similarity
         similarity_scores = cosine_similarity(tfidf_matrix, job_vec).flatten()
 
         df['match_score'] = similarity_scores
 
-      
+        # Top 10 candidates
         top_candidates = df[['Category', 'Resume', 'match_score']].sort_values(
             by="match_score", ascending=False
         ).head(10)
@@ -45,6 +66,7 @@ if st.button("Find Top Candidates"):
             st.markdown(f"**{row['Category']}** (Score: {row['match_score']:.2f})")
             st.write(row['Resume'][:400] + "...")
             st.write("---")
+
 
 
 
